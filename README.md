@@ -61,7 +61,7 @@ npm run login
 npm run init
 ```
 
-Firebase のどの機能を有効化させるか尋ねられるので **Firestore** と **Hosting** を選んで有効化させてください。
+Firebase のどの機能を有効化させるか尋ねられるので **Firestore** と **Hosting** を選んで有効化させてください。
 ちなみに public フォルダを上書きして良いか聞かれるので **No を選んで上書きしないように** してください。
 
 それではいよいよ簡易サーバーを立ち上げてアプリケーションを起動してみましょう。
@@ -72,3 +72,15 @@ npm run serve
 
 コマンドを実行したら [http://localhost:5000](http://localhost:5000) にアクセスしてください。
 さきほどのスクリーンショットと同じような画面が表示されていれば、ひとまずアプリケーションの起動は成功しています。
+
+## Step.2 - さぁコーディング
+
+ここから先は実際にコードを書きながら進めます。
+ステップ毎にコーディング済みのファイルを用意していますので、途中でわからなくなったらコードを確認してみてください。
+
+- [Step.1](http://localhost:5000/step1.html)
+- [Step.2](http://localhost:5000/step2.html)
+- [Step.3](http://localhost:5000/step3.html)
+- [Step.4](http://localhost:5000/step4.html)
+- [Step.5](http://localhost:5000/step5.html)
+- [Step.6](http://localhost:5000/step6.html)
