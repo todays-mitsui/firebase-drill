@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Step.1</title>
+
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<!-- Bootstrap: レイアウト -->
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Moment: 日時計算 -->
+<script src="/js/moment.min.js"></script>
+
+<!-- Firebase: データベース -->
+<script src="https://www.gstatic.com/firebasejs/5.5.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.5.3/firebase-firestore.js"></script>
+<script>
+// Firebase 初期化
+// ここにあなたの設定を書き込む
+var config = {
+  apiKey: "<API_KEY>",
+  authDomain: "<PROJECT_ID>.firebaseapp.com",
+  databaseURL: "https://<DATABASE_NAME>.firebaseio.com",
+  projectId: "<PROJECT_ID>",
+  storageBucket: "<BUCKET>.appspot.com",
+  messagingSenderId: "<SENDER_ID>",
+};
+firebase.initializeApp(config);
+</script>
+
+</head>
+<body>
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <div class="form-group">
+        <label for="select-user">ログインユーザー</label>
+        <select id="select-user" class="form-control">
+          <option value="">未選択</option>
+          <option value="Alice">Alice</option>
+          <option value="Bob">Bob</option>
+          <option value="Charlie">Charlie</option>
+        </select>
+      </div><!-- /.form-group -->
+
+      <div class="form-group">
+        <label for="select-dest">送信先ユーザー</label>
+        <select id="select-dest" class="form-control">
+            <option value="">未選択</option>
+            <option value="Alice">Alice</option>
+          <option value="Bob">Bob</option>
+          <option value="Charlie">Charlie</option>
+        </select>
+      </div><!-- /.form-group -->
+    </div><!-- /.col -->
+
+    <div class="col-8">
+      <div class="row row-messages">
+        <ol id="timeline" class="list-group list-group-flush">
+          <li class="list-group-item transmission">
+            <time>00:00:00</time>
+            <p>こんにちは</p>
+          </li>
+
+          <li class="list-group-item reception">
+            <time>00:00:00</time>
+            <p>ひさしぶり</p>
+          </li>
+        </ol>
+      </div><!-- /.row.row-messages -->
+
+      <div class="row row-message-input">
+        <form id="message-input" action="">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="メッセージを入力">
+
+            <div class="input-group-append">
+              <button id="btn-message-submit" class="btn btn-primary">送信</button>
+            </div>
+          </div><!-- /.input-group -->
+        </form>
+      </div><!-- /.row.row-message-input -->
+    </div><!-- /.col-8 -->
+  </div><!-- /.row -->
+</div><!-- /.container -->
+
+<script>
+var db = firebase.firestore();
+db.settings({ timestampsInSnapshots: true });
+
+
+$('#select-user').on('change', onUserChange);
+$('#select-dest').on('change', onUserChange);
+
+$('#message-input').on('submit', onMessegeSend);
+
+/* ========================================================================== */
+
+/** ユーザー選択が変更された時に実行される */
+function onUserChange(e) {
+  var from = $('#select-user').val();
+  var to = $('#select-dest').val();
+
+  if (!from) {
+    console.info('Sender not selected.');
+    return;
+  }
+
+  if (!to) {
+    console.info('Receiver not selected.');
+    return;
+  }
+
+  alert(`ユーザーが選択されました。
+ログインユーザー: ${from}
+送信先ユーザー: ${to}`);
+}
+
+/** メッセージ送信時に実行される */
+function onMessegeSend(e) {
+  e.preventDefault();
+
+  var from = $('#select-user').val();
+  var to = $('#select-dest').val();
+
+  var $form = $(this);
+  var message = $form.find('input').val();
+
+  alert(`メッセージを送信しようとしています。
+ログインユーザー: ${from}
+送信先ユーザー: ${to}
+メッセージ: ${message}`);
+}
+
+</script>
+
+</body>
+</html>

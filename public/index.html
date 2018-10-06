@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Whispered</title>
+
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<!-- Bootstrap: レイアウト -->
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Moment: 日時計算 -->
+<script src="/js/moment.min.js"></script>
+
+<!-- Firebase: データベース -->
+<script src="https://www.gstatic.com/firebasejs/5.5.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/5.5.3/firebase-firestore.js"></script>
+<script>
+// Firebase 初期化
+// ここにあなたの設定を書き込む
+var config = {
+  apiKey: "<API_KEY>",
+  authDomain: "<PROJECT_ID>.firebaseapp.com",
+  databaseURL: "https://<DATABASE_NAME>.firebaseio.com",
+  projectId: "<PROJECT_ID>",
+  storageBucket: "<BUCKET>.appspot.com",
+  messagingSenderId: "<SENDER_ID>",
+};
+firebase.initializeApp(config);
+</script>
+
+</head>
+<body>
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <div class="form-group">
+        <label for="select-user">ログインユーザー</label>
+        <select id="select-user" class="form-control">
+          <option value="">未選択</option>
+          <option value="Alice">Alice</option>
+          <option value="Bob">Bob</option>
+          <option value="Charlie">Charlie</option>
+        </select>
+      </div><!-- /.form-group -->
+
+      <div class="form-group">
+        <label for="select-dest">送信先ユーザー</label>
+        <select id="select-dest" class="form-control">
+            <option value="">未選択</option>
+            <option value="Alice">Alice</option>
+          <option value="Bob">Bob</option>
+          <option value="Charlie">Charlie</option>
+        </select>
+      </div><!-- /.form-group -->
+    </div><!-- /.col -->
+
+    <div class="col-8">
+      <div class="row row-messages">
+        <ol id="timeline" class="list-group list-group-flush">
+          <li class="list-group-item transmission">
+            <time>00:00:00</time>
+            <p>こんにちは</p>
+          </li>
+
+          <li class="list-group-item reception">
+            <time>00:00:00</time>
+            <p>ひさしぶり</p>
+          </li>
+        </ol>
+      </div><!-- /.row.row-messages -->
+
+      <div class="row row-message-input">
+        <form id="message-input" action="">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="メッセージを入力">
+
+            <div class="input-group-append">
+              <button id="btn-message-submit" class="btn btn-primary">送信</button>
+            </div>
+          </div><!-- /.input-group -->
+        </form>
+      </div><!-- /.row.row-message-input -->
+    </div><!-- /.col-8 -->
+  </div><!-- /.row -->
+</div><!-- /.container -->
+
+<script>
+var db = firebase.firestore();
+db.settings({ timestampsInSnapshots: true });
+
+
+$('#select-user').on('change', onUserChange);
+$('#select-dest').on('change', onUserChange);
+
+$('#message-input').on('submit', onMessegeSend);
+
+/* ========================================================================== */
+
+function onUserChange(e) {
+  var from = $('#select-user').val();
+  var to = $('#select-dest').val();
+
+  if (!from) {
+    console.info('Sender not selected.');
+    return;
+  }
+
+  if (!to) {
+    console.info('Receiver not selected.');
+    return;
+  }
+
+  listenSnapShot(to, from, function() {
+    getTransmissionAndReceptionMessage(to, from)
+      .then(function(messages) {
+        flushTimeline(messages);
+      });
+  });
+}
+
+function onMessegeSend(e) {
+  e.preventDefault();
+
+  var from = $('#select-user').val();
+  var to = $('#select-dest').val();
+
+  var $form = $(this);
+  var message = $form.find('input').val();
+
+  addMessage(from, to, message)
+    .then(function({ id, path }) {
+      console.info('id:', id);
+      console.info('path:', path);
+    });
+}
+
+/* ========================================================================== */
+
+// Step.2
+
+function addMessage(from, to, message) {
+  return db.collection('messages').add({
+    timestamp: Date.now(),
+    from: from,
+    to: to,
+    message: message,
+  })
+  .catch(function(error) {
+      console.error('Error adding document: ', error);
+  });
+}
+
+/* ========================================================================== */
+
+// Step.3
+
+function getMessages(to, from, limit = 10) {
+  return db.collection('messages')
+    .where('to', '==', to)
+    .where('from', '==', from)
+    .orderBy('timestamp', 'desc')
+    .limit(limit)
+    .get()
+    .catch(function(error) {
+      console.error('Error getting documents: ', error);
+    })
+    .then(function(snapshot) {
+      return snapshot.docs;
+    });
+}
+
+/* ========================================================================== */
+
+// Step.4
+
+function flushTimeline(messages) {
+  var $timeline = $('#timeline');
+
+  $timeline.empty();
+
+  messages.reverse().map(function(message) {
+    console.info('message:', message);
+
+    var sendTime = moment(message.timestamp).format('HH:mm:ss');
+
+    $timeline.append(`
+      <li class="list-group-item ${message.direction}">
+        <time>${sendTime}</time>
+        <p>${message.message}</p>
+      </li>
+    `);
+  })
+}
+
+/* ========================================================================== */
+
+// Step.5
+
+function listenSnapShot(to, from, callback) {
+  db.collection('messages')
+    .where('to', '==', to)
+    .where('from', '==', from)
+    .onSnapshot(callback);
+
+  db.collection('messages')
+    .where('to', '==', from)
+    .where('from', '==', to)
+    .onSnapshot(callback);
+}
+
+/* ========================================================================== */
+
+// Step.6
+
+function getTransmissionMessage(to, from, limit = 10) {
+  return getMessages(to, from, limit)
+    .then(function(docs) {
+      return docs.map(function(doc) {
+        return {
+          direction: 'transmission',
+          doc: doc,
+        };
+      });
+    });
+}
+
+function getReceptionMessage(to, from, limit = 10) {
+  return getMessages(from, to, limit)
+    .then(function(docs) {
+      return docs.map(function(doc) {
+        return {
+          direction: 'reception',
+          doc: doc,
+        };
+      });
+    });
+}
+
+function getTransmissionAndReceptionMessage(to, from, limit = 10) {
+  return Promise.all([
+    getTransmissionMessage(to, from),
+    getReceptionMessage(to, from),
+  ])
+    .then(function([transmissions, receptions]) {
+      var docs = [].concat(transmissions, receptions);
+
+      messages = docs.map(function({ direction, doc }) {
+        console.log('doc:', doc);
+        var data = doc.data();
+
+        return {
+          timestamp: data.timestamp,
+          direction: direction,
+          message: data.message,
+        };
+      });
+
+      return messages.sort(function(left, right) {
+        return left.timestamp > right.timestamp ? -1 : 1;
+      });
+    })
+}
+
+</script>
+
+</body>
+</html>

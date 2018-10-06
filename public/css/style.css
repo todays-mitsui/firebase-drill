@@ -1,0 +1,47 @@
+@charset "UTF-8";
+
+/* ========================================================================== */
+
+/* 基本設定 */
+
+form {
+  width: 100%;
+}
+
+ul, ol {
+  width: 100%;
+}
+
+.container {
+  padding: 40px 0;
+}
+
+/* ========================================================================== */
+
+/* メッセージのツールチップ */
+
+#timeline p {
+  width: 80%;
+  margin: 0;
+  margin-right: 20%;
+  padding: .4em .8em;
+
+  background-color: #ddd;
+  border-radius: 6px;
+}
+#timeline time {
+  display: block;
+
+  color: #666;
+  font-size: 10px;
+}
+
+#timeline .reception p {
+  margin-right: 0;
+  margin-left: 20%;
+}
+#timeline .reception time {
+  text-align: right;
+}
+
+/* ========================================================================== */

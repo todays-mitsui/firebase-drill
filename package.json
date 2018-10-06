@@ -1,0 +1,17 @@
+{
+  "name": "whispered",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "login": "firebase login",
+    "init": "firebase init",
+    "serve": "firebase serve"
+  },
+  "devDependencies": {
+    "firebase-tools": "^5.0.1"
+  }
+}
